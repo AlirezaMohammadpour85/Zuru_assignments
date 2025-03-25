@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: Install dependencies
+      apt:
+        name: ["curl", "git", "ca-certificates"]
+        state: present
+
+    - name: Add GitLab Runner repository
+      shell: curl -fsSL https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh | bash
+
+    - name: Install GitLab Runner
+      apt:
+        name: gitlab-runner
+        state: present
+
+    - name: Register GitLab Runner
+      shell: gitlab-runner register --non-interactive --url "https://gitlab.com/" --registration-token "YOUR_REGISTRATION_TOKEN" --executor "docker"

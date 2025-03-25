@@ -1,0 +1,29 @@
+# VS Code
+.vscode/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+
+# AWS Credentials (if they are local, ensure they're in your .env or a secured location)
+*.aws/
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# MacOS system files
+.DS_Store
+
+# Temporary files
+*.log
+*.tmp
+
+# IDE or text editor files
+.idea/
+*.swp
+*.swo
