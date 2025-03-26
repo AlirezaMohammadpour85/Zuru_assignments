@@ -6,9 +6,9 @@ resource "aws_ecs_service" "go_api_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
+    subnets          = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id] # one subnet is required I added for redundancy in future
     security_groups  = [aws_security_group.go_api_sg.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   desired_count = 1

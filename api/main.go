@@ -1,6 +1,6 @@
 // main.go - A simple HTTP server using the net/http package (no external dependencies).
 //
-// This application listens on port 8080 and provides two endpoints:
+// This application listens on port 3333 and provides two endpoints:
 //
 //  1. GET / - The root endpoint that returns a message prompting the user to
 //     use the /health endpoint.
@@ -39,7 +39,7 @@ func main() {
 	// Define routes - end
 
 	// Start the server - start
-	port := "8080"
+	port := "3333"
 	log.Printf("Starting server on port %s...\n", port)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {

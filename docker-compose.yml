@@ -1,3 +1,5 @@
+# the app is listening on port  8080- for ecs task
+
 services:
   api:
     build:
