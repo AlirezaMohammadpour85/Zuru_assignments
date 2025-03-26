@@ -1,3 +1,4 @@
+# use two different setvices to block access to api app directly
 resource "aws_ecs_service" "go_api_service" {
   name            = "go-api-service"
   cluster         = aws_ecs_cluster.go_api_cluster.id
@@ -7,8 +8,9 @@ resource "aws_ecs_service" "go_api_service" {
   network_configuration {
     subnets          = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
     security_groups  = [aws_security_group.go_api_sg.id]
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   desired_count = 1
 }
+

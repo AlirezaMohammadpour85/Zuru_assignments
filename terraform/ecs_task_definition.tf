@@ -15,7 +15,7 @@ resource "aws_ecs_task_definition" "go_api_task" {
       portMappings = [
         {
           containerPort = 8080
-          hostPort      = 8080
+          # hostPort      = 8080 # for ec2 not fargate
         }
       ]
     },
@@ -28,7 +28,7 @@ resource "aws_ecs_task_definition" "go_api_task" {
       portMappings = [
         {
           containerPort = 80
-          hostPort      = 80
+          # hostPort      = 80
         }
       ]
     }

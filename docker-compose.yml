@@ -2,15 +2,14 @@ services:
   api:
     build:
       context: ./api
-      dockerfile: Dockerfile
+      # dockerfile: Dockerfile
     container_name: go-api-container
     restart: always
   proxy:
     build:
       context: ./nginx
-      dockerfile: Dockerfile
     container_name: nginx-proxy
     ports:
-      - "80:8080"
+      - "80:80"
     depends_on:
       - api
