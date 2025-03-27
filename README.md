@@ -20,5 +20,23 @@ I used the first approach and create one repository and add images to that repos
 # ECS Considerations
 we can apply the scenario using EC2 or FARGATE. I chose FARGATE.
 
-## Some notes
+## Some notes on CI/CD
+
 - I used a sigle ecs task with two containers. I dedicated two different subnets for availability.
+- I used ubuntu_vm machine in my pc. To be able to use bash - i selected shell as executer and I had to condifgire the *"/home/gitlab-runner/.bash_logout"*  file as follow:
+
+I need to comment these lines https://docs.gitlab.com/runner/shells/#shell-profile-loading:
+if [ "$SHLVL" = 1 ]; then
+    [ -x /usr/bin/clear_console ] && /usr/bin/clear_console -q
+fi 
+
+- need to add gitlabrunner into the sudoers withou requesting passwod
+sudo visudo
+gitlab-runner ALL=(ALL) NOPASSWD:ALL
+
+## Defined vars in gitlab 
+AWS_ACCESS_KEY_ID
+AWS_ACCOUNT_ID
+AWS_DEFAULT_REGION
+AWS_SECRET_ACCESS_KEY
+

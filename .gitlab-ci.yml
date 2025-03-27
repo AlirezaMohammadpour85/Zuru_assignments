@@ -1,5 +1,3 @@
-image: docker:latest
-
 stages:
   - build
   - deploy
@@ -13,29 +11,44 @@ variables:
   ECS_CLUSTER: "go-api-cluster"
   ECS_SERVICE_API: "go-api-service"
 
-before_script:
-  - apk add --no-cache python3 py3-pip
-  - pip3 install awscli
-  - export PATH=$HOME/.local/bin:$PATH
-  - aws --version
-  - echo "Logging into AWS ECR..."
-  - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-
 build:
   stage: build
+  tags:
+    - ubuntu_vm # # runner on my ubuntu_vm
   script:
-    - echo "Building and pushing Docker images..."
-    
-    # Build & Push Nginx image
+    - echo "Updating system and installing dependencies..."
+    - sudo apt update && sudo apt install -y awscli docker.io
+
+    - echo "Configuring AWS CLI..."
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set default.region $AWS_DEFAULT_REGION
+    - aws configure set output json
+
+    - echo "Adding GitLab Runner to Docker group..."
+    - sudo usermod -aG docker $(whoami)
+
+    - echo "Ensuring Docker is running..."
+    - sudo systemctl start docker || echo "Docker already running"
+
+    - echo "Checking AWS CLI version..."
+    - aws --version
+
+    - echo "Logging into AWS ECR..."
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+    - echo "Building and pushing Nginx image..."
     - docker build -t $NGINX_IMAGE_TAG -f ./nginx/Dockerfile ./nginx
     - docker push $NGINX_IMAGE_TAG
-    
-    # Build & Push API image
+
+    - echo "Building and pushing API image..."
     - docker build -t $API_IMAGE_TAG -f ./api/Dockerfile ./api
     - docker push $API_IMAGE_TAG
 
 deploy:
   stage: deploy
+  tags:
+    - ubuntu_vm
   script:
     - echo "Deploying to ECS..."
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE_API --force-new-deployment

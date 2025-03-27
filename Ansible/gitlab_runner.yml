@@ -1,0 +1,53 @@
+- name: Install and configure GitLab Runner
+  hosts: gitlab_runner
+  become: true
+
+  tasks:
+    - name: Install required curl
+      apt:
+        name: 
+          - curl
+          - ca-certificates
+        state: present
+        update_cache: yes
+
+    - name: Add GitLab Runner repository
+      shell: |
+        curl -L --output /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64
+        chmod +x /usr/local/bin/gitlab-runner
+        useradd --comment 'GitLab Runner' --create-home gitlab-runner --shell /bin/bash
+        gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner
+        gitlab-runner start
+
+    - name: Disable clear_console in .bash_logout
+      lineinfile:
+        path: /home/gitlab-runner/.bash_logout
+        state: present
+        line: "# if [ \"$SHLVL\" = 1 ]; then\n#    [ -x /usr/bin/clear_console ] && /usr/bin/clear_console -q\n# fi"
+        create: yes
+        backup: yes
+
+    - name: Ensure GitLab Runner user has sudo privileges without a password
+      lineinfile:
+        path: /etc/sudoers.d/gitlab-runner
+        line: "gitlab-runner ALL=(ALL) NOPASSWD:ALL"
+        create: yes
+
+    - name: Register GitLab Runner
+      shell: |
+        gitlab-runner register --non-interactive \
+          --url "https://gitlab.com/" \
+          --registration-token "YOUR_REGISTRATION_TOKEN" \
+          --executor "shell" \
+          --description "GitLab Runner" \
+          --tag-list "shell,linux" \
+          --run-untagged="true" \
+          --locked="false"
+      args:
+        creates: /etc/gitlab-runner/config.toml
+
+    - name: Start and enable GitLab Runner
+      systemd:
+        name: gitlab-runner
+        enabled: yes
+        state: started
