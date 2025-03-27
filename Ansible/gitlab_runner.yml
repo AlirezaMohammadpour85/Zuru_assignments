@@ -1,17 +1,18 @@
+---
 - name: Install and configure GitLab Runner
-  hosts: gitlab_runner
+  hosts: gitlab_runners
   become: true
 
   tasks:
-    - name: Install required curl
+    - name: Install prerequired curl and ca-certificates - required for GitLab Runner installation
       apt:
-        name: 
+        name:
           - curl
           - ca-certificates
         state: present
         update_cache: yes
 
-    - name: Add GitLab Runner repository
+    - name: Install GitLab Runner - reference is gitlab website
       shell: |
         curl -L --output /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64
         chmod +x /usr/local/bin/gitlab-runner
@@ -19,12 +20,11 @@
         gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner
         gitlab-runner start
 
-    - name: Disable clear_console in .bash_logout
-      lineinfile:
+    - name: Remove lines from .bash_logout using replace - suggested by GitLab
+      replace:
         path: /home/gitlab-runner/.bash_logout
-        state: present
-        line: "# if [ \"$SHLVL\" = 1 ]; then\n#    [ -x /usr/bin/clear_console ] && /usr/bin/clear_console -q\n# fi"
-        create: yes
+        regexp: '^if \[ "\$SHLVL" = 1 \]; then\s*\[ -x /usr/bin/clear_console \] && /usr/bin/clear_console -q\s*fi$'
+        replace: ""
         backup: yes
 
     - name: Ensure GitLab Runner user has sudo privileges without a password
@@ -33,18 +33,28 @@
         line: "gitlab-runner ALL=(ALL) NOPASSWD:ALL"
         create: yes
 
-    - name: Register GitLab Runner
+    - name: Check if GitLab Runner is already registered 
+      shell: |
+        grep -q "name = \"GitLab Runner\"" /etc/gitlab-runner/config.toml && echo "Registered" || echo "Not Registered"
+      register: runner_status
+      ignore_errors: true
+      changed_when: false
+
+    - name: Debug Runner Status
+      debug:
+        msg: "Runner status: {{ runner_status.stdout }}"
+
+    - name: Register GitLab Runner - skipp if already registered
       shell: |
         gitlab-runner register --non-interactive \
           --url "https://gitlab.com/" \
-          --registration-token "YOUR_REGISTRATION_TOKEN" \
+          --registration-token "{{ gitlab_token }}" \
           --executor "shell" \
           --description "GitLab Runner" \
-          --tag-list "shell,linux" \
-          --run-untagged="true" \
-          --locked="false"
-      args:
-        creates: /etc/gitlab-runner/config.toml
+          --tag-list "ubuntu_vm" \
+          --run-untagged "true" \
+          --locked "false"
+      when: "'Not Registered' in runner_status.stdout"
 
     - name: Start and enable GitLab Runner
       systemd:

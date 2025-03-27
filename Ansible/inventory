@@ -1,2 +1,5 @@
-[gitlab_runner]
-192.168.1.149
+[gitlab_runners]
+192.168.1.75
+
+[gitlab_runners:vars]
+gitlab_token="GR134894135MbtWd5gX98M1hEsWHN"
