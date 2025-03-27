@@ -14,7 +14,7 @@ variables:
 build:
   stage: build
   tags:
-    - ubuntu_vm # # runner on my ubuntu_vm
+    - ubuntu_vm  # # runner on my ubuntu_vm
   script:
     - echo "Updating system and installing dependencies..."
     - sudo apt update && sudo apt install -y awscli docker.io
@@ -48,7 +48,7 @@ build:
 deploy:
   stage: deploy
   tags:
-    - ubuntu_vm
+    - ubuntu_vm  
   script:
     - echo "Deploying to ECS..."
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE_API --force-new-deployment
